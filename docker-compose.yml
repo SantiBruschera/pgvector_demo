@@ -1,0 +1,15 @@
+services:
+  pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: pgvector-demo
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo123
+      POSTGRES_DB: demodb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+
+volumes:
+  pgvector_data:
