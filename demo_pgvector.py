@@ -236,18 +236,21 @@ def busqueda_semantica(query, top_k=5):
     return cur.fetchall()
 
 #%%
+#primera consulta semantica
 print("Query: 'Python y bases de datos'")
 print("-" * 70)
 for texto, tema, distancia in busqueda_semantica("Python y bases de datos"):
     print(f"[{tema:13}] dist={distancia}  |  {texto[:70]}")
 
 #%%
+#segunda consulta semantica
 print("Query: 'partidos y jugadores históricos'")
 print("-" * 70)
 for texto, tema, distancia in busqueda_semantica("partidos y jugadores históricos"):
     print(f"[{tema:13}] dist={distancia}  |  {texto[:70]}")
 
 #%%
+#tercera consulta semantica
 print()
 print("Query: 'no quiero ir al gimnasio'")
 print("-" * 70)
@@ -277,6 +280,7 @@ def busqueda_like(query):
 
 
 #%%
+#primera consulta con LIKE
 print("LIKE — Query: 'partidos y jugadores históricos'")
 print("-" * 70)
 resultados = busqueda_like("partidos y jugadores históricos")
@@ -287,6 +291,7 @@ else:
     print("Sin resultados\n")
 
 #%%
+#segunda consulta con LIKE
 print("LIKE — Query: 'No tengo ropa deportiva limpia, imposible ir así.'")
 print("-" * 70)
 resultados = busqueda_like("No tengo ropa deportiva limpia, imposible ir así.")
@@ -297,6 +302,7 @@ else:
     print("Sin resultados\n")    
 
 #%%
+#tercera consulta con LIKE
 print("LIKE — Query: 'no quiero ir al gimnasio'")
 print("-" * 70)
 resultados = busqueda_like("no quiero ir al gimnasio")
@@ -315,14 +321,73 @@ else:
 
 
 
+# %%
+# Celda 9 — Insertar datos reales de Wikipedia
+import wikipediaapi
+
+wiki = wikipediaapi.Wikipedia(
+    language='es',
+    user_agent='pgvector-demo/1.0'
+)
+
+articulos = {
+    "fútbol": ["Peñarol", "Club Nacional de Football", "Selección de fútbol de Uruguay"],
+    "programación": ["Python (lenguaje de programación)", "PostgreSQL", "Docker (software)"],
+    "ejercicio": ["Ejercicio físico", "Gimnasio", "Correr"],
+}
+
+fragmentos = []
+for tema, titulos in articulos.items():
+    for titulo in titulos:
+        pagina = wiki.page(titulo)
+        if pagina.exists():
+            # Dividimos el texto en párrafos y tomamos los primeros 10
+            parrafos = [p for p in pagina.text.split('\n') if len(p) > 100][:100]
+            for parrafo in parrafos:
+                fragmentos.append((parrafo[:300], tema))
+            print(f"{titulo} — {len(parrafos)} párrafos")
+        else:
+            print(f"{titulo} — no encontrado")
+
+print(f"\nTotal fragmentos reales: {len(fragmentos)}")
+
+
+#%%
+#genero embeddings de wikipedia
+textos_wiki = [f[0] for f in fragmentos]
+temas_wiki  = [f[1] for f in fragmentos]
+
+embeddings_wiki = modelo.encode(textos_wiki, show_progress_bar=False)
+
+registros_wiki = [
+    (textos_wiki[i], temas_wiki[i], embeddings_wiki[i].tolist())
+    for i in range(len(textos_wiki))
+]
+
+cur.executemany(
+    "INSERT INTO frases (texto, tema, embedding) VALUES (%s, %s, %s)",
+    registros_wiki
+)
+
+cur.execute("SELECT COUNT(*) FROM frases;")
+print(f"\nTotal de filas en tabla: {cur.fetchone()[0]}")
+
+
+
+
+
+
+
+
+
 
 
 # %%
-# Celda 9 — Insertar datos sintéticos para el benchmark
+# Insertar datos sintéticos para el benchmark
 import random
 import time
 
-FILAS = 10_000
+FILAS = 10000
 
 print(f"Generando {FILAS:,} vectores aleatorios...")
 t0 = time.time()
@@ -454,12 +519,14 @@ def busqueda_hibrida(query, filtro_tema, top_k=5):
 
 
 #%%
+#busqueda híbrida con filtro de tema fútbol
 print("Búsqueda híbrida: 'grandes jugadores' | tema = fútbol")
 print("-" * 70)
 for texto, tema, dist in busqueda_hibrida("grandes jugadores", "fútbol"):
     print(f"  dist={dist}  [{tema}]  {texto[:70]}")
 
 #%%
+#busqueda híbrida con filtro de tema ejercicio
 print()
 print("Búsqueda híbrida: 'lenguajes y algoritmos' | tema = programación")
 print("-" * 70)
