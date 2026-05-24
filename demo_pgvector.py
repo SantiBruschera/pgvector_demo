@@ -341,7 +341,7 @@ for tema, titulos in articulos.items():
     for titulo in titulos:
         pagina = wiki.page(titulo)
         if pagina.exists():
-            # Dividimos el texto en párrafos y tomamos los primeros 10
+            # dividimos el texto en párrafos y tomamos los primeros 100
             parrafos = [p for p in pagina.text.split('\n') if len(p) > 100][:100]
             for parrafo in parrafos:
                 fragmentos.append((parrafo[:300], tema))
