@@ -1,6 +1,6 @@
 # %% 
 # Celda 1 — Conexión a PostgreSQL
-import psycopg2
+import psycopg2 #permite conectar python con postgre
 from pgvector.psycopg2 import register_vector
 
 #conecto pgvector con python para hacer la cargade datos y las consultas
@@ -19,7 +19,7 @@ cur = conn.cursor()
 cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
 cur.execute("DROP TABLE IF EXISTS frases;")
 
-register_vector(conn)
+register_vector(conn) #define como le llegan los datos a cada uno, array de numpy a python y vector para postgre
 
 
 
@@ -228,11 +228,11 @@ print(cur.fetchone()[0])
 def busqueda_semantica(query, top_k=5):
     embedding_query = modelo.encode(query).tolist() #convierto la query en un vector para poder comparar y medir distancais con el resto de frases
     cur.execute("""
-    SELECT texto, tema, ROUND((embedding <=> %(vector)s::vector)::numeric, 4) AS distancia
+    SELECT texto, tema, ROUND((embedding <=> %s::vector)::numeric, 4) AS distancia
     FROM frases
-    ORDER BY embedding <=> %(vector)s::vector
-    LIMIT %(top_k)s;
-""", {"vector": embedding_query, "top_k": top_k})
+    ORDER BY embedding <=> %s::vector
+    LIMIT %s;
+""", (embedding_query, embedding_query, top_k))
     return cur.fetchall()
 
 #%%
