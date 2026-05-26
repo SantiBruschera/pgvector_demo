@@ -504,13 +504,13 @@ print("=" * 40)
 
 # %%
 # Celda 13 — Filtros híbridos
-def busqueda_hibrida(query, filtro_tema, top_k=5):
+def busqueda_hibrida(query, filtro_tema,top_k=5):
     embedding_query = modelo.encode(query).tolist() #conviento la query en vector
     cur.execute("""
         SELECT texto, tema, ROUND((embedding <=> %s::vector)::numeric, 4) AS distancia
         FROM frases
         WHERE tema = %s
-          AND texto NOT LIKE 'Frase sintética%%' 
+          AND texto NOT LIKE 'Frase sintética%%'
         ORDER BY embedding <=> %s::vector
         LIMIT %s;
     """, (embedding_query, filtro_tema, embedding_query, top_k))
@@ -544,7 +544,7 @@ for texto, tema, dist in busqueda_hibrida("lenguajes y algoritmos", "programaci�
 
 # %%
 # Celda 14 — RAG
-def armar_prompt_rag(pregunta, top_k=4):
+def armar_prompt_rag(pregunta, top_k=10):
     print(f"Pregunta: '{pregunta}'")
     print()
 
@@ -609,3 +609,5 @@ print("Conexión cerrada")
 
 
 
+
+# %%
