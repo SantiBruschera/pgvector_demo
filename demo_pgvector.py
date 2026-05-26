@@ -149,7 +149,7 @@ import numpy as np
 textos = [f[0] for f in frases]
 temas  = [f[1] for f in frases]
 
-#convierto los 21 textos a vectores de 384 dimensiones
+#convierto los 31 textos a vectores de 384 dimensiones
 embeddings = modelo.encode(textos, show_progress_bar=False)
 
 
@@ -305,7 +305,7 @@ else:
 #tercera consulta con LIKE
 print("LIKE — Query: 'no quiero ir al gimnasio'")
 print("-" * 70)
-resultados = busqueda_like("no quiero ir al gimnasio")
+resultados = busqueda_like("No quiero ir al gimnasio")
 if resultados:
     for texto, tema in resultados:
         print(f"[{tema}] {texto}")
